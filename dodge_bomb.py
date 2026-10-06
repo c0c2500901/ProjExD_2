@@ -16,6 +16,11 @@ DELTA = {
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+def check_bound(obj_rct):  #画面内に収まっているか確認する    
+    return (
+        0 <= obj_rct.left and obj_rct.right <= WIDTH,
+        0 <= obj_rct.top and obj_rct.bottom <= HEIGHT
+    )
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -48,9 +53,20 @@ def main():
                 sum_mv[0] += mv[0]  #移動
                 sum_mv[1] += mv[1]  #移動
 
+        old_rct = kk_rct.copy()
         kk_rct.move_ip(sum_mv)
+
+        if not all(check_bound(kk_rct)):
+            kk_rct = old_rct
+
         bb_rct.move_ip(vx, vy)
-       
+
+        if not check_bound(bb_rct)[0]:
+            vx *= -1
+
+        if not check_bound(bb_rct)[1]:
+            vy *= -1
+
         screen.blit(kk_img, kk_rct)
         screen.blit(bb_img, bb_rct)
         pg.display.update()
