@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import time
+import math
 import pygame as pg
 
 
@@ -9,12 +10,14 @@ WIDTH, HEIGHT = 1100, 650
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+
 # 画面内にあるか確認する
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return (
         0 <= obj_rct.left and obj_rct.right <= WIDTH,
         0 <= obj_rct.top and obj_rct.bottom <= HEIGHT
     )
+
 
 # Game Over画面を表示する
 def gameover(screen: pg.Surface) -> None:
@@ -28,6 +31,7 @@ def gameover(screen: pg.Surface) -> None:
         True,
         (255, 255, 255)
     )
+
     gameover_rct = gameover_text.get_rect()
     gameover_rct.center = (WIDTH // 2, HEIGHT // 2)
 
@@ -114,6 +118,31 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
     return kk_imgs
 
 
+# 爆弾からこうかとんへの移動方向を計算する
+def calc_orientation(
+    org: pg.Rect,
+    dst: pg.Rect,
+    current_xy: tuple[float, float]
+) -> tuple[float, float]:
+
+    dx = dst.centerx - org.centerx
+    dy = dst.centery - org.centery
+
+    distance = math.sqrt(dx ** 2 + dy ** 2)
+
+    # こうかとんとの距離が300未満なら現在の方向を維持する
+    if distance < 300:
+        return current_xy
+
+    # こうかとんの方向へ向かう速度を計算する
+    speed = math.sqrt(50)
+
+    return (
+        dx / distance * speed,
+        dy / distance * speed
+    )
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -154,8 +183,8 @@ def main():
         random.randint(0, HEIGHT)
     )
 
-    vx = 5
-    vy = 5
+    vx = 5.0
+    vy = 5.0
 
     clock = pg.time.Clock()
     tmr = 0
@@ -208,6 +237,13 @@ def main():
         center = bb_rct.center
         bb_rct.size = bb_img.get_size()
         bb_rct.center = center
+
+        # 追加機能4：爆弾をこうかとんに向かわせる
+        vx, vy = calc_orientation(
+            bb_rct,
+            kk_rct,
+            (vx, vy)
+        )
 
         avx = vx * bb_accs[stage]
         avy = vy * bb_accs[stage]
