@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import time
 import pygame as pg
 
 
@@ -8,15 +9,47 @@ WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
-def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
-    """
-    物体が画面内に収まっているか確認する。
-    """
+def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:  #画面内にあるか
     return (
         0 <= obj_rct.left and obj_rct.right <= WIDTH,
         0 <= obj_rct.top and obj_rct.bottom <= HEIGHT
     )
 
+def gameover(screen: pg.Surface) -> None:  # GameOver画面
+    # 半透明の黒い画面
+    black_screen = pg.Surface((WIDTH, HEIGHT))
+    black_screen.fill((0, 0, 0))
+    black_screen.set_alpha(180)
+
+    # Game Overテキスト
+    font = pg.font.Font(None, 100)
+    gameover_text = font.render("Game Over", True, (255, 255, 255))
+    gameover_rct = gameover_text.get_rect()
+    gameover_rct.center = (WIDTH // 2, HEIGHT // 2)
+
+    # こうかとん画像読み込みと縮小
+    kk_img = pg.image.load("fig/8.png")
+    kk_img = pg.transform.rotozoom(kk_img, 0, 0.9)
+
+    # 左側のこうかとん（テキストの左側）
+    kk_l_rct = kk_img.get_rect()
+    kk_l_rct.centery = HEIGHT // 2
+    kk_l_rct.right = gameover_rct.left - 20  # テキストの左端から20px左
+
+    # 右側のこうかとん（左右反転してテキストの右側）
+    kk_r_img = pg.transform.flip(kk_img, True, False)  # 左右反転
+    kk_r_rct = kk_r_img.get_rect()
+    kk_r_rct.centery = HEIGHT // 2
+    kk_r_rct.left = gameover_rct.right + 20  # テキストの右端から20px右
+
+    # 描画処理
+    screen.blit(black_screen, (0, 0))
+    screen.blit(gameover_text, gameover_rct)
+    screen.blit(kk_img, kk_l_rct)      # 左側のこうかとん
+    screen.blit(kk_r_img, kk_r_rct)    # 右側のこうかとん
+
+    pg.display.update()
+    time.sleep(5)
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -87,9 +120,11 @@ def main():
         if not check_bound(bb_rct)[1]:
             vy *= -1
 
-        # 練習問題4：こうかとんと爆弾が衝突したら終了
+        # GaneOverの表示
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             return
+
 
         # 描画
         screen.blit(kk_img, kk_rct)
