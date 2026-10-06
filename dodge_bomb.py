@@ -12,16 +12,18 @@ WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
-# 画面内にあるか確認する
+
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+    """画面内にあるか確認する。"""
     return (
         0 <= obj_rct.left and obj_rct.right <= WIDTH,
         0 <= obj_rct.top and obj_rct.bottom <= HEIGHT
     )
 
 
-# Game Over画面を表示する
+
 def gameover(screen: pg.Surface) -> None:
+    """Gameover"""
     black_screen = pg.Surface((WIDTH, HEIGHT))
     black_screen.fill((0, 0, 0))
     black_screen.set_alpha(180)
